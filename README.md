@@ -36,6 +36,39 @@ asserts:
 
 ---
 
+## Naming assertions
+
+Each assertion has a stable **`id`** (snake_case, unique in that file) — see [`.invariants.example`](.invariants.example). The `id` is how reports, `cascades_to`, and sub-repo files reference the same claim.
+
+- One `id` = one claim; do not reuse an `id` for a different meaning.
+- Prefer descriptive handles (`subscriber_derivation_cross_sdk_consistency`) over ticket numbers or dates.
+- Sub-repo assertions may mirror an apex `id` when scoping the same guarantee locally.
+
+---
+
+## Lifecycle of assertions
+
+**Who may edit:** only maintainers named in `authority` (typically via CODEOWNERS on `/.invariants`). Agents and other contributors must not edit dotfiles — they evaluate proposals against the cascade and write **reports**, not constitutional changes.
+
+| Phase | What happens |
+|-------|----------------|
+| **Propose** | Issues, ADRs, or designs may *threaten* claims; that does not edit `.invariants`. |
+| **Approve** | A maintainer merges a PR that changes the dotfile. |
+| **Enforce** | Later changes are checked against the cascade (human review and/or conformance agent). |
+| **Retire** | A maintainer removes or rewrites an assertion in a PR — never silent drift in the file. |
+
+---
+
+## Versioning and migration
+
+Changing `.invariants` has **high blast radius** for the repo (and cascaded repos). The default traceability model is **auditable git history**: each change lands in a maintainer PR that CODEOWNERS review, so commits pin who changed which claim and when.
+
+**Severity** is how you express migration cost on the claims themselves — see [What happens when a change is proposed](#what-happens-when-a-change-is-proposed): FROZEN, VERSIONED, ADDITIVE drive BLOCKED / PROCEED TO TRIAGE / PROCEED. A VERSIONED assertion implies the team owes a documented migration path when that claim is threatened.
+
+The top-level `version:` field in the YAML is a **file-format** label (e.g. `"1.0"`), not a mandate to semver your product. Teams with very high stakes may adopt stricter release rules for the dotfile itself; that is optional policy, not part of the convention.
+
+---
+
 ## What happens when a change is proposed
 
 Whoever evaluates (human or agent) loads the **cascade** — apex plus every relevant repo file — and asks per assertion: **does this threaten the claim?**
