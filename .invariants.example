@@ -1,0 +1,42 @@
+# .invariants — the convention (copy to YOUR repo root as .invariants)
+# Apex / constitution file when you govern multiple repos from one workspace.
+#
+# Principles:
+#   1. Descriptive claims only — what must remain true, not executable rules.
+#   2. Hierarchical — sub-repos inherit this file; both levels are evaluated.
+#   3. Precise — severity (FROZEN / VERSIONED / ADDITIVE) drives agent verdicts.
+#   4. Constitution only — no issue refs, fork flags, or "currently failing" here.
+#
+# Rename this file to .invariants at the workspace root (not .invariance).
+
+version: "1.0"
+scope: "Apex interface invariants — replace with your system name"
+since: "YYYY-MM-DD"
+authority: "Maintainers only — not agent-writable"
+
+asserts:
+
+  - id: example_frozen_cross_repo_rule
+    claim: "Replace with a statement that must hold in every implementation"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "keywords that should appear where the rule is implemented"
+      in_file: "path/relative/to/repo/root/optional-file.ext"
+    cascades_to:
+      - "service-a/.invariants#example_scoped_rule"
+    why: "Why this is FROZEN — cross-repo silent failure if violated."
+
+  - id: example_versioned_behavior
+    claim: "Replace with a behavior that may change with a documented migration"
+    source: codebase
+    severity: VERSIONED
+    verify:
+      search: "search terms"
+    why: "Why VERSIONED, not ADDITIVE."
+
+  - id: example_additive_extension
+    claim: "New capability that must not break existing consumers"
+    source: architectural
+    severity: ADDITIVE
+    why: "Safe to extend when no existing assertion is threatened."

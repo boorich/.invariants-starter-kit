@@ -1,0 +1,19 @@
+.DS_Store
+node_modules/
+
+# Local config (optional — many teams commit sentinel.config.yml)
+# sentinel.config.yml
+
+# Active apex file often copied from example on first setup
+# .invariants
+
+# Cloned product repositories — not tracked in the sentinel repo
+# (add directory names as you configure repos[].dir)
+
+# Ephemeral session artifacts
+issues/
+reports/
+
+# Editor / OS
+.idea/
+*.swp

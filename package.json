@@ -1,0 +1,18 @@
+{
+  "name": "invariants-starter-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference workspace for the .invariants dotfile convention (optional vecs index + session tooling)",
+  "type": "module",
+  "scripts": {
+    "index": "node scripts/index-repos.js",
+    "check:qdrant": "node scripts/check-qdrant.js"
+  },
+  "dependencies": {
+    "fastembed": "^2.1.0",
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

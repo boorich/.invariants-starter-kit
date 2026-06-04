@@ -1,0 +1,33 @@
+# Copy to sentinel.config.yml and edit.
+#
+# repos[].dir — folder at workspace root (sibling of /.invariants), e.g. service-a/
+# repos[].github — enables session-setup.sh to fetch/post issues via gh CLI
+# collection — Qdrant collection rebuilt every session (vecs prerequisite)
+
+collection: my-stack
+# Used by: session-setup.sh (index), conformance agent (vecs query <collection> "…")
+
+contract_one_liner: "Describe the shared interface in one sentence (e.g. identity X must mean the same in every consumer)."
+
+repos:
+  # Example — uncomment and edit:
+  # - dir: service-a
+  #   clone: git@github.com:your-org/service-a.git
+  #   github: your-org/service-a
+  #   invariants_branch: feat/invariants
+  #
+  # - dir: service-b
+  #   clone: https://github.com/your-org/service-b.git
+  #   github: your-org/service-b
+
+github:
+  issue_label: needs_triage
+  triage_label: in_triage
+  # If empty, issue fetch uses repos[].github from above.
+  repos: []
+
+index:
+  # Source code only. No .md — README/specs pollute semantic search; agent reads markdown as plain files.
+  extensions: [".ts", ".js", ".sol", ".cs"]
+  # OCR skip set — build artifacts and deps are not the stack snapshot.
+  skip_dirs: [node_modules, .git, out, build, dist, artifacts, cache, coverage, .next, vendor, lib, Library, Temp, Logs, obj, Obj]

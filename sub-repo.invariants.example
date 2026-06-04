@@ -1,0 +1,29 @@
+# .invariants — sub-repo scope (copy into each product repo as .invariants)
+#
+# Principles:
+#   1. Scoped claims for this repo only — plain language, must-remain-true.
+#   2. inherits: "../.invariants" — path relative to THIS file (sibling layout under sentinel root).
+#   3. cascades_to — link upward so apex FROZEN is evaluated with local assertions.
+#   4. No status metadata — fork decisions and issue tracking live in reports / GitHub, not here.
+#
+# If this repo intentionally diverges from the apex constitution, say so in the conformance
+# report. Do not encode fork status in this file.
+
+version: "1.0"
+scope: "service-name — replace"
+inherits: "../.invariants"
+since: "YYYY-MM-DD"
+authority: "Repo maintainers — not agent-writable"
+
+asserts:
+
+  - id: example_scoped_rule
+    claim: "Implementation-specific claim for this repo only"
+    source: codebase
+    severity: FROZEN
+    verify:
+      search: "terms"
+      in_file: "src/example.ts"
+    cascades_to:
+      - "../.invariants#example_frozen_cross_repo_rule"
+    why: "Link upward so apex FROZEN is evaluated together with this repo."

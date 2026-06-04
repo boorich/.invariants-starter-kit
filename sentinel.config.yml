@@ -1,0 +1,28 @@
+# Copy to sentinel.config.yml and edit.
+# repos[].dir paths are relative to this workspace root (not under repos/ unless you prefer).
+
+collection: my-stack
+# Used by: session-setup.sh (index), conformance agent (vecs query <collection> "…")
+
+contract_one_liner: "Describe the shared interface in one sentence (e.g. identity X must mean the same in every consumer)."
+
+repos:
+  # Example — uncomment and edit:
+  # - dir: service-a
+  #   clone: git@github.com:your-org/service-a.git
+  #   github: your-org/service-a
+  #   invariants_branch: feat/invariants
+  #
+  # - dir: service-b
+  #   clone: https://github.com/your-org/service-b.git
+  #   github: your-org/service-b
+
+github:
+  issue_label: needs_triage
+  triage_label: in_triage
+  # If empty, issue fetch uses repos[].github from above.
+  repos: []
+
+index:
+  extensions: [".ts", ".js", ".sol", ".cs"]
+  skip_dirs: [node_modules, .git, out, build, dist, artifacts, cache, coverage, .next, vendor, lib, Library, Temp, Logs, obj, Obj]
