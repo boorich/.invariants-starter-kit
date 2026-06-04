@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 # Reference workspace session — optional tooling around the .invariants convention.
 #
-# Prerequisites:
-#   - vecs + Qdrant: https://github.com/boorich/vecs
-#   - sentinel.config.yml (repo list + collection name — replaces hard-coded REPOS in OCR)
-#   - npm install (in this directory)
-#   - gh CLI + auth when repos[].github is set (fetch issues, post reports from the agent)
+# First run:  bash setup.sh   (bootstrap submodules + Qdrant + gh, then this script)
+# Or:         bash scripts/bootstrap.sh && bash session-setup.sh
 
 set -euo pipefail
 
 WORKSPACE_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$WORKSPACE_DIR"
+
+if [[ ! -f vendor/vecs/package.json ]]; then
+  echo "→ vendor/vecs missing — running bootstrap"
+  bash "$WORKSPACE_DIR/scripts/bootstrap.sh"
+fi
+
+# shellcheck source=scripts/env.sh
+source "$WORKSPACE_DIR/scripts/env.sh"
 
 if [[ ! -f sentinel.config.yml ]]; then
   echo "ERROR: sentinel.config.yml missing. Copy sentinel.config.yml.example and edit." >&2
@@ -23,11 +28,19 @@ if [[ ! -d node_modules ]]; then
 fi
 
 echo "── Checking Qdrant (vecs) ────────────────────────────────────────────"
-node scripts/check-qdrant.js
+node scripts/check-qdrant.js || {
+  echo "→ Qdrant not up — running bootstrap"
+  bash "$WORKSPACE_DIR/scripts/bootstrap.sh"
+  source "$WORKSPACE_DIR/scripts/env.sh"
+  node scripts/check-qdrant.js
+}
 
 if ! command -v vecs &>/dev/null; then
-  echo "WARNING: 'vecs' CLI not on PATH — index will still build; use vecs for manual queries." >&2
-  echo "         Install: https://github.com/boorich/vecs" >&2
+  echo "WARNING: 'vecs' not on PATH — run: bash scripts/bootstrap.sh" >&2
+fi
+
+if ! command -v gh &>/dev/null; then
+  echo "WARNING: 'gh' not on PATH — issue fetch/post skipped unless installed" >&2
 fi
 
 # ── 1. Sync repositories ─────────────────────────────────────────────────────

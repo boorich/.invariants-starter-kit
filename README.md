@@ -114,19 +114,60 @@ No vecs, no workspace, no agent required. You already have a portable convention
 
 ### Level 3 — Reference workspace (this repository)
 
-Use this repo when you want the **full loop** used in production Interface Sentinel setups:
+Full loop: code index ([vecs](https://github.com/boorich/vecs)), GitHub triage (`gh`), conformance agent. **Copy-paste:**
 
-- Clone sibling product repos over time (`sentinel.config.yml`)  
-- Rebuild a semantic code index each session ([vecs](https://github.com/boorich/vecs))  
-- Triage GitHub issues via **`gh`** + `.cursor/rules/conformance-agent.mdc`  
-- Self-healing `IMPLEMENTATION_MAP.md` (optional; not part of the dotfile spec)
+```bash
+# prerequisites: Node 18+, Docker Desktop running, git
+git clone --recurse-submodules <repo-url>
+cd <repo-dir>
+
+cp sentinel.config.yml.example sentinel.config.yml
+cp .invariants.example .invariants
+# edit sentinel.config.yml, .invariants, CONTRACT.md when ready
+
+bash setup.sh
+gh auth login    # once — only if you fetch/post GitHub issues
+```
+
+`setup.sh` pulls submodules (`vendor/vecs`), installs npm deps, starts Qdrant, puts `vecs` on PATH, syncs repos from config, fetches `needs_triage` issues, rebuilds the code index.
+
+**Already cloned without submodules?**
+
+```bash
+git submodule update --init --recursive
+bash setup.sh
+```
+
+**Just deps, no index yet:** `bash scripts/bootstrap.sh` then `bash session-setup.sh` (same as `setup.sh` in two steps).
+
+#### Qdrant without Docker (macOS, power users)
+
+Same Level 3 workspace — you only change **how Qdrant runs**. Skip Docker entirely and use [vecs](https://github.com/boorich/vecs)’s native install: a **launchd daemon** plus `vecs` on your PATH for every terminal session.
+
+```bash
+git submodule update --init --recursive
+cd vendor/vecs && npm install && npm run install:system
+cd ../..
+
+cp sentinel.config.yml.example sentinel.config.yml
+cp .invariants.example .invariants
+bash setup.sh
+```
+
+`install:system` downloads Qdrant, registers `dev.vecs.qdrant` (starts on login), stores data in `~/.vecs/data/`, and **`npm link`s the `vecs` CLI globally**. After that:
+
+- **`vecs list` / `vecs query …` work from any directory** — not only this workspace.
+- Collections persist on your machine; other projects can reuse the same Qdrant without another stack.
+- `setup.sh` sees Qdrant on `localhost:6333` and **does not start Docker**.
+
+Remove later: `cd vendor/vecs && npm run uninstall:system`.
+
+Open `.cursor/rules/conformance-agent.mdc` in Cursor and run it on `issues/` or an ad-hoc change.
 
 ```text
-your-workspace/              # this boilerplate repo, renamed as you like
-  .invariants                # apex — copy from .invariants.example
-  service-a/                 # your git clone
-    .invariants              # inherits: "../.invariants"
-  service-b/
+your-workspace/
+  .invariants              # apex
+  service-a/               # clones from sentinel.config.yml
     .invariants
 ```
 
@@ -161,26 +202,20 @@ Default extensions: OCR’s set **minus `.md`**. OCR may still index markdown; t
 
 ---
 
-## Running the reference workspace
+## What `setup.sh` wires up (optional detail)
 
-**Prerequisites:** [vecs](https://github.com/boorich/vecs) (Qdrant + `vecs query`), Node 18+ for indexing, optional **`gh`** for issue fetch/post.
-
-```bash
-cp sentinel.config.yml.example sentinel.config.yml
-cp .invariants.example .invariants
-# edit config + dotfile + CONTRACT.md
-npm install
-bash session-setup.sh          # pull repos, fetch issues, rebuild index
-# run conformance-agent on issues/ or ad-hoc
-```
+| Piece | What happens |
+|-------|----------------|
+| `vendor/vecs` | Submodule — Qdrant via **Docker** (default) or **macOS daemon** (`install:system`) |
+| `vecs` CLI | `vendor/bin/vecs` in this repo; global `vecs` after `install:system` |
+| `gh` | Uses yours if installed; otherwise downloads to `vendor/bin/gh` |
+| Index | Code only (no `.md` in Qdrant) — see **Two layers** below |
 
 | File | Part of the **convention**? | Role |
 |------|---------------------------|------|
-| `/.invariants`, `{repo}/.invariants` | **Yes** — ship these everywhere | Governance |
-| `CONTRACT.md`, `GLOSSARY.md` | No — workspace helpers | Descriptive context for agents/humans |
-| `IMPLEMENTATION_MAP.md` | No — workspace helper | Agent-updated code index; git-audited |
-| `sentinel.config.yml`, `session-setup.sh` | No — this repo only | Orchestration |
-| `conformance-agent.mdc` | No — template | One agent implementation |
+| `/.invariants`, `{repo}/.invariants` | **Yes** | Governance |
+| `CONTRACT.md`, `GLOSSARY.md`, `IMPLEMENTATION_MAP.md` | No | Agent helpers (`·NAV` on line 1) |
+| `setup.sh`, `sentinel.config.yml` | No | This workspace only |
 
 ---
 
@@ -189,6 +224,14 @@ bash session-setup.sh          # pull repos, fetch issues, rebuild index
 1. Copy examples into **your** repos — that is the real deliverable.  
 2. Adjust `sentinel.config.yml` only if you use this workspace.  
 3. Fork `conformance-agent.mdc` for your editor or CI — the verdict table is the contract.
+
+---
+
+## Static site (GitHub Pages)
+
+Landing page for social sharing: [`docs/index.html`](docs/index.html) — same visual language as the handbook’s `invariance.html`, updated for `.invariants` (plural) and this starter kit.
+
+Enable Pages: repo **Settings → Pages → Build from branch `main` / folder `/docs`**.
 
 ---
 

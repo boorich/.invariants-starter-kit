@@ -14,13 +14,12 @@ async function main() {
     console.error(`
 ERROR: Cannot reach Qdrant at ${QDRANT}
 
-vecs is required for Interface Sentinel sessions.
-  https://github.com/boorich/vecs
+Bootstrap Qdrant + vecs submodule:
 
-macOS:  cd vecs && npm run install:system
-Docker: cd vecs && docker compose up -d
+  bash scripts/bootstrap.sh
+  # or:  bash setup.sh
 
-Then verify:  vecs list
+https://github.com/boorich/vecs (vendor/vecs)
 `)
     console.error(err.message || err)
     process.exit(1)

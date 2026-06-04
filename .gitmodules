@@ -1,0 +1,9 @@
+[submodule "vendor/vecs"]
+	path = vendor/vecs
+	url = https://github.com/boorich/vecs.git
+	branch = main
+
+[submodule "vendor/github-cli"]
+	path = vendor/github-cli
+	url = https://github.com/cli/cli.git
+	branch = trunk

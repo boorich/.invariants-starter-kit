@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.invariants — dotfile convention &amp; starter kit</title>
+<meta name="description" content="A dotfile for what must always remain true. Optional reference workspace: vecs code index, GitHub triage, conformance agent. Clone and run setup.sh.">
+<meta property="og:title" content=".invariants — constitution for codebases that must not drift">
+<meta property="og:description" content="One YAML dotfile per repo. Optional starter kit: semantic code search, agent verdicts, batteries-included setup.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a08;
+    --fg: #e8e4d9;
+    --muted: #6b6760;
+    --accent: #c8b97a;
+    --dim: #1e1e1a;
+    --border: #2a2a26;
+    --frozen: #c8786a;
+    --versioned: #c8b97a;
+    --additive: #7a9e7e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  nav {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .nav-logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--fg); }
+  .nav-links a.nav-cta { color: var(--accent); }
+
+  .hero {
+    padding: 120px 0 80px;
+    position: relative;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--muted);
+  }
+
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 300;
+    line-height: 1.0;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+
+  .hero-title .dot { color: var(--accent); }
+
+  .hero-subtitle {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-weight: 300;
+    color: var(--muted);
+    margin-bottom: 56px;
+    max-width: 560px;
+    line-height: 1.5;
+  }
+
+  .hero-description {
+    font-size: 14px;
+    color: var(--fg);
+    max-width: 600px;
+    line-height: 1.9;
+    opacity: 0.8;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 72px 0;
+  }
+
+  .code-block {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 28px 32px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block .filename {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .code-comment { color: var(--muted); }
+  .code-key { color: #9ab8d4; }
+  .code-value { color: #b8c9a0; }
+  .code-string { color: var(--accent); }
+  .code-frozen { color: var(--frozen); }
+  .code-versioned { color: var(--versioned); }
+  .code-additive { color: var(--additive); }
+
+  .section { margin-bottom: 80px; }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+
+  .section-body {
+    color: var(--fg);
+    opacity: 0.75;
+    max-width: 640px;
+    line-height: 1.9;
+  }
+
+  .principles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .principles { grid-template-columns: 1fr; }
+  }
+
+  .principle {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+
+  .principle:hover { border-color: var(--accent); }
+
+  .principle-number {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .principle-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 12px;
+  }
+
+  .principle-body {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .steps {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .step:first-child { border-top: 1px solid var(--border); }
+
+  .step-num {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    padding-top: 2px;
+  }
+
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+
+  .step-body {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .layers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 600px) {
+    .layers-grid { grid-template-columns: 1fr; }
+  }
+
+  .layer-card {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+  }
+
+  .layer-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 12px;
+  }
+
+  .layer-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .match-block {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    padding: 32px;
+    margin-top: 40px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 2.0;
+  }
+
+  .match-block .match-comment {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .match-arm { display: block; padding-left: 24px; }
+  .match-severity-frozen { color: var(--frozen); }
+  .match-severity-versioned { color: var(--versioned); }
+  .match-severity-additive { color: var(--additive); }
+  .match-severity-none { color: var(--muted); }
+  .match-arrow { color: var(--muted); }
+  .match-outcome { color: var(--fg); }
+
+  .match-note {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .lineage {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .lineage-item {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 32px;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+
+  .lineage-item:hover { border-color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .lineage-item { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  .lineage-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 6px;
+  }
+
+  .lineage-meta {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    line-height: 1.7;
+  }
+
+  .lineage-inherits {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.85;
+    margin-bottom: 14px;
+  }
+
+  .lineage-gap {
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.85;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+  }
+
+  .lineage-gap::before {
+    content: 'gap → ';
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  .lineage-connector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 2px 0;
+    padding: 0 32px;
+    height: 24px;
+  }
+
+  .lineage-connector::before {
+    content: '';
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    margin-left: 20px;
+  }
+
+  .lineage-connector span {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .fork-note {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-top: 40px;
+  }
+
+  .fork-note p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+
+  .fork-note strong {
+    color: var(--fg);
+    font-weight: 400;
+  }
+
+  .adoption-levels {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .level {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+  }
+
+  .level-num {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .level-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+
+  .level-body {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* Try it — social CTA */
+  .try-section {
+    margin: 0 0 80px;
+    padding: 0;
+  }
+
+  .try-hero {
+    background: linear-gradient(135deg, #1a1914 0%, var(--dim) 50%, #141410 100%);
+    border: 1px solid var(--accent);
+    border-left: 4px solid var(--accent);
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .try-hero::after {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(200, 185, 122, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .try-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .try-headline {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 300;
+    color: var(--fg);
+    margin-bottom: 16px;
+    line-height: 1.2;
+    max-width: 520px;
+  }
+
+  .try-sub {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.85;
+    margin-bottom: 32px;
+  }
+
+  .try-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    font-size: 12px;
+    line-height: 2;
+    overflow-x: auto;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .try-code .line-comment { color: var(--muted); }
+
+  .try-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    padding: 14px 28px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background: #d4c48a;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .try-footnote {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+    position: relative;
+    z-index: 1;
+  }
+
+  .try-footnote a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .try-footnote a:hover { text-decoration: underline; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-tag {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-label { animation: fadeUp 0.6s ease both; }
+  .hero-title { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-subtitle { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-description { animation: fadeUp 0.6s 0.3s ease both; }
+
+  .cursor {
+    display: inline-block;
+    width: 3px;
+    height: 0.85em;
+    background: var(--accent);
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink 1.1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <nav>
+    <span class="nav-logo">.invariants</span>
+    <ul class="nav-links">
+      <li><a href="#what">What</a></li>
+      <li><a href="#lineage">Lineage</a></li>
+      <li><a href="#how">How</a></li>
+      <li><a href="#verdict">Verdict</a></li>
+      <li><a href="#try" class="nav-cta">Try it</a></li>
+      <li><a href="#spec">Spec</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-label">Dotfile convention + reference workspace</div>
+    <h1 class="hero-title"><span class="dot">.</span>invariants<span class="cursor"></span></h1>
+    <p class="hero-subtitle">What must always remain true — in one file, in plain language.</p>
+    <p class="hero-description">
+      Not a framework. Not SaaS. A <code>.invariants</code> dotfile you commit like <code>.gitignore</code>.
+      Optional <strong>starter kit</strong>: multi-repo cascade, <a href="https://github.com/boorich/vecs" style="color: var(--accent);">vecs</a> code index (no markdown in the corpus),
+      GitHub triage via <code>gh</code>, and a conformance agent that pattern-matches severity to
+      <strong>BLOCKED</strong>, <strong>PROCEED TO TRIAGE</strong>, <strong>PROCEED</strong>, or <strong>CLOSE</strong>.
+      The dotfile is the law; the agent is the clerk.
+    </p>
+  </section>
+
+  <hr id="what">
+
+  <section class="section">
+    <div class="section-label">The problem</div>
+    <h2 class="section-title">Projects grow. Intent fades.</h2>
+    <p class="section-body">
+      When a system spans many repositories, no one holds the full picture. A change in one repo
+      breaks an assumption in another. Tests pass. Builds succeed. Architecture quietly becomes
+      something else. <code>.invariants</code> makes non-negotiable conditions explicit — for humans
+      in PR review and for agents with codebase access.
+    </p>
+
+    <div class="principles">
+      <div class="principle">
+        <span class="principle-number">01</span>
+        <div class="principle-title">Descriptive, not prescriptive</div>
+        <p class="principle-body">Claims in plain language — not a rules engine, not ArchUnit, not linter config.</p>
+      </div>
+      <div class="principle">
+        <span class="principle-number">02</span>
+        <div class="principle-title">Hierarchical by design</div>
+        <p class="principle-body">Apex constitution plus per-repo files with <code>inherits</code>. One repo is the degenerate case.</p>
+      </div>
+      <div class="principle">
+        <span class="principle-number">03</span>
+        <div class="principle-title">Precise, not vague</div>
+        <p class="principle-body">Verdicts come from threatened severity — FROZEN, VERSIONED, ADDITIVE — not from chat mood.</p>
+      </div>
+      <div class="principle">
+        <span class="principle-number">04</span>
+        <div class="principle-title">Forks are valid — in the report</div>
+        <p class="principle-body">Incompatible sub-repo claims may be an intentional fork. Say so in the review. Never store fork status, issue numbers, or “currently failing” in the dotfile.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr id="lineage">
+
+  <section class="section">
+    <div class="section-label">Lineage</div>
+    <h2 class="section-title">Built on two established shoulders.</h2>
+    <p class="section-body">
+      <code>.invariants</code> sits at the intersection of ADRs and architectural fitness functions —
+      and fills the gap neither covers alone.
+    </p>
+
+    <div class="lineage">
+      <div class="lineage-item">
+        <div>
+          <div class="lineage-name">Architecture Decision Records</div>
+          <div class="lineage-meta">Michael Nygard, 2011 · adr.github.io</div>
+        </div>
+        <div>
+          <p class="lineage-inherits">ADRs capture <em>why</em> a decision was made. The <code>why:</code> field in each assertion is an ADR in miniature.</p>
+          <p class="lineage-gap">ADRs document the past. They do not tell an agent what to do when a proposal threatens them.</p>
+        </div>
+      </div>
+      <div class="lineage-connector"><span>+</span></div>
+      <div class="lineage-item">
+        <div>
+          <div class="lineage-name">Fitness functions</div>
+          <div class="lineage-meta">Ford, Parsons, Kua — 2017 · ThoughtWorks</div>
+        </div>
+        <div>
+          <p class="lineage-inherits">Automated checks on structure and dependencies. <code>severity</code> and the verdict table are fitness-function logic.</p>
+          <p class="lineage-gap">They need executable rules. They cannot express “every consumer hashes identity identically” without bespoke code.</p>
+        </div>
+      </div>
+      <div class="lineage-connector"><span></span></div>
+      <div class="lineage-item" style="border-left: 3px solid var(--accent);">
+        <div>
+          <div class="lineage-name">.invariants</div>
+          <div class="lineage-meta">natural language · semantic evaluation · agent-native</div>
+        </div>
+        <div>
+          <p class="lineage-inherits">With an LLM evaluator, assertions <em>are</em> executable. Load the cascade, read real source, match severity. The dotfile is the enforcement surface.</p>
+          <p class="lineage-gap" style="color: var(--additive); border-left-color: var(--additive);">fills: semantic invariants static analysis cannot check.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr id="how">
+
+  <section class="section">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Dotfile everywhere. Starter kit optional.</h2>
+    <p class="section-body">
+      Ship <code>.invariants</code> in any repo (Level 1). Use the reference workspace when you want
+      the full loop: code index, issue triage, agent reports (Level 3).
+    </p>
+
+    <div class="adoption-levels">
+      <div class="level">
+        <div class="level-num">Level 1</div>
+        <div class="level-title">Dotfile only</div>
+        <p class="level-body"><code>cp .invariants.example .invariants</code> in your repo. No vecs, no agent required.</p>
+      </div>
+      <div class="level">
+        <div class="level-num">Level 2</div>
+        <div class="level-title">Multi-repo cascade</div>
+        <p class="level-body">Apex + per-repo files with <code>inherits</code> and <code>cascades_to</code>. Your own agent rule or review checklist.</p>
+      </div>
+      <div class="level">
+        <div class="level-num">Level 3</div>
+        <div class="level-title">Reference workspace (starter kit)</div>
+        <p class="level-body"><code>bash setup.sh</code> — submodules, Qdrant, index, <code>needs_triage</code> issues, conformance agent in Cursor.</p>
+      </div>
+    </div>
+
+    <div class="steps" style="margin-top: 48px;">
+      <div class="step">
+        <span class="step-num">01 —</span>
+        <div>
+          <div class="step-title">Write the cascade</div>
+          <p class="step-body">Apex <code>/.invariants</code> plus <code>{repo}/.invariants</code>. Claims, severity, optional <code>verify</code> hints. Maintainers only — agents never edit dotfiles.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">02 —</span>
+        <div>
+          <div class="step-title">Index code, not prose</div>
+          <p class="step-body">Starter kit rebuilds a <strong>code-only</strong> Qdrant collection via <code>vecs query</code>. Markdown on disk orients the agent; it is not embedded — avoids “what we wrote” masquerading as “what runs.”</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">03 —</span>
+        <div>
+          <div class="step-title">Triage from GitHub labels</div>
+          <p class="step-body">Fetch <code>needs_triage</code> issues into <code>issues/</code>. Agent writes <code>reports/</code>, posts comments, flips <code>in_triage</code>. Ground truth: code in vecs + label state on GitHub.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">04 —</span>
+        <div>
+          <div class="step-title">Navigate with ·NAV</div>
+          <p class="step-body">Long-lived <code>.md</code> files declare edit mode on line 1: <code>&lt;!-- ·NAV:M --&gt;</code> (map paths), <code>S</code> (sync facts). <code>IMPLEMENTATION_MAP.md</code> is meant to be agent-curated after code discovery.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="layers-grid">
+      <div class="layer-card">
+        <h3>Materializes (vecs)</h3>
+        <p>Source in product repos — <code>.ts</code>, <code>.js</code>, <code>.sol</code>, <code>.cs</code> by default. PASS / FAIL / UNKNOWN from files you read after <code>vecs query</code>.</p>
+      </div>
+      <div class="layer-card">
+        <h3>Navigates (disk)</h3>
+        <p><code>CONTRACT.md</code>, map, issues, reports. Wildcard when untagged. Constitution stays in <code>.invariants</code> only.</p>
+      </div>
+    </div>
+
+    <div class="fork-note">
+      <p>
+        <strong>On forks:</strong> Incompatible apex vs sub-repo claims may be an <strong>intentional fork</strong>.
+        State that in the conformance <strong>report</strong>. Operators decide. Do not add fork metadata,
+        waivers, or PASS/FAIL notes inside <code>.invariants</code>.
+      </p>
+    </div>
+  </section>
+
+  <hr id="verdict">
+
+  <section class="section">
+    <div class="section-label">The verdict</div>
+    <h2 class="section-title">A match statement, not a meeting.</h2>
+    <p class="section-body">
+      The agent pattern-matches threatened severity. Audit PASS/FAIL is per-run output — never written back into the dotfile.
+    </p>
+
+    <div class="match-block">
+      <span class="match-comment">// enforcement logic — proposal threatens a claim:</span>
+      match threatened_assertion.severity {<br>
+      <span class="match-arm"><span class="match-severity-frozen">FROZEN</span>    <span class="match-arrow">=></span> <span class="match-outcome">BLOCKED</span></span>
+      <span class="match-arm"><span class="match-severity-versioned">VERSIONED</span> <span class="match-arrow">=></span> <span class="match-outcome">PROCEED TO TRIAGE</span></span>
+      <span class="match-arm"><span class="match-severity-additive">ADDITIVE</span>  <span class="match-arrow">=></span> <span class="match-outcome">PROCEED</span></span>
+      <span class="match-arm"><span class="match-severity-none">None</span>      <span class="match-arrow">=></span> <span class="match-outcome">CLOSE</span></span>
+      }
+      <div class="match-note">
+        Mixed issues: split the recommendation (e.g. BLOCKED for the FROZEN part, PROCEED for the additive part).
+      </div>
+    </div>
+  </section>
+
+  <hr id="try">
+
+  <section class="section try-section">
+    <div class="try-hero">
+      <div class="try-eyebrow">Starter kit — try it now</div>
+      <h2 class="try-headline">Clone. Two copies. One command.</h2>
+      <p class="try-sub">
+        Batteries-included reference workspace: <code>vendor/vecs</code> submodule, Qdrant (Docker by default),
+        optional macOS daemon for power users, <code>gh</code> for triage. Then open the conformance agent in Cursor.
+      </p>
+      <div class="try-code" id="try-snippet">
+<span class="line-comment"># Node 18+, Docker Desktop (or vecs install:system on macOS)</span>
+git clone --recurse-submodules https://github.com/boorich/.invariants-starter-kit
+cd .invariants-starter-kit
+
+cp sentinel.config.yml.example sentinel.config.yml
+cp .invariants.example .invariants
+
+bash setup.sh
+gh auth login   <span class="line-comment"># once, if you use GitHub triage</span>
+      </div>
+      <div class="try-actions">
+        <a class="btn btn-primary" href="https://github.com/boorich/.invariants-starter-kit" target="_blank" rel="noopener noreferrer">Open on GitHub</a>
+        <a class="btn btn-secondary" href="https://github.com/boorich/.invariants-starter-kit#readme" target="_blank" rel="noopener noreferrer">README &amp; macOS no-Docker path</a>
+        <a class="btn btn-secondary" href="https://github.com/boorich/vecs" target="_blank" rel="noopener noreferrer">vecs</a>
+      </div>
+      <p class="try-footnote">
+        Host this page on GitHub Pages from <code>/docs</code>.
+        Convention only? Copy <code>.invariants.example</code> into any repo — no starter kit required.
+        <a href="#spec">File format ↓</a>
+      </p>
+    </div>
+  </section>
+
+  <hr id="spec">
+
+  <section class="section">
+    <div class="section-label">The file format</div>
+    <h2 class="section-title">What a <code>.invariants</code> file looks like</h2>
+    <p class="section-body" style="margin-bottom: 32px;">
+      Deliberately simple. Maintainer-edited YAML. No “currently failing”, no issue numbers, no fork flags in the file.
+    </p>
+
+    <div class="code-block">
+      <span class="filename"># /.invariants — apex constitution</span>
+      <span class="code-key">version:</span> <span class="code-string">"1.0"</span><br>
+      <span class="code-key">scope:</span> <span class="code-string">"Shared interface — cross-repo guarantees"</span><br>
+      <span class="code-key">authority:</span> <span class="code-string">"Maintainers only — not agent-writable"</span><br><br>
+      <span class="code-key">asserts:</span><br>
+      &nbsp;&nbsp;<span class="code-key">- id:</span> <span class="code-string">identity_derivation_consistency</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">claim:</span> <span class="code-value">"All consumers derive identity the same way from the same inputs"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">severity:</span> <span class="code-frozen">FROZEN</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">verify:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">search:</span> <span class="code-value">"identity derivation keccak256 encodePacked"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">cascades_to:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-value">- "service-a/.invariants#identity_derivation"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">why:</span> <span class="code-value">"Cross-consumer mismatch fails silently at runtime."</span>
+    </div>
+
+    <div class="code-block" style="margin-top: 2px;">
+      <span class="filename"># service-a/.invariants</span>
+      <span class="code-key">inherits:</span> <span class="code-string">"../.invariants"</span><br><br>
+      <span class="code-key">asserts:</span><br>
+      &nbsp;&nbsp;<span class="code-key">- id:</span> <span class="code-string">identity_derivation</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">claim:</span> <span class="code-value">"identity() uses keccak256(encodePacked(['address'], [addr]))"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">severity:</span> <span class="code-frozen">FROZEN</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">verify:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">search:</span> <span class="code-value">"identity keccak256 encodePacked"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">in_file:</span> <span class="code-value">"src/utils.ts"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">why:</span> <span class="code-value">"Must match all other consumers exactly."</span>
+    </div>
+  </section>
+
+  <hr>
+
+  <section class="section">
+    <div class="section-label">Philosophy</div>
+    <h2 class="section-title">A constitution, not a linter.</h2>
+    <p class="section-body" style="margin-bottom: 24px;">
+      Tools describe <em>what was built</em>. <code>.invariants</code> defines <em>what the system is allowed to remain</em>.
+      Navigational markdown may drift and be repaired; the dotfile is governance.
+    </p>
+    <p class="section-body">
+      Take the convention into any repo. Use the starter kit when you want the full agent loop on your machine.
+    </p>
+  </section>
+
+  <footer>
+    <p>Apache-2.0 · convention + optional reference workspace</p>
+    <span class="footer-tag"><a href="https://github.com/boorich/.invariants-starter-kit">starter kit</a> · <a href="https://github.com/boorich/vecs">vecs</a></span>
+  </footer>
+</div>
+
+</body>
+</html>
