@@ -231,8 +231,6 @@ rg '<!-- ·NAV:' --glob '*.md' --glob '!node_modules/**'
 
 Codes: **`M`** map paths, **`S`** sync facts. **Untagged** `.md` (`issues/`, `reports/`, README, …) is a **wildcard** — use or ignore. **Ground truth:** code in `vecs` + triage **labels** on GitHub (`skip if exists` on `reports/`). See `GLOSSARY.md`.
 
-Default extensions: OCR’s set **minus `.md`**. OCR may still index markdown; this boilerplate does not.
-
 ---
 
 ## What `setup.sh` wires up (optional detail)
