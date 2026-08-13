@@ -11,6 +11,7 @@ Descriptive vocabulary for this sentinel. The conformance agent may update entri
 | **Assertion** | One YAML entry in `.invariants` (`id`, `claim`, `severity`, …) |
 | **Cascade** | Apex `/.invariants` plus sub-repo files linked by `inherits` and `cascades_to` |
 | **Constitution** | Apex `/.invariants` — cross-repo guarantees |
+| **OS seal** | Maintainer `chmod` + immutable flag on `.invariants`; `npm run check:sealed` verifies; no unlock script in-repo |
 | **Collection** | Qdrant index name in `sentinel.config.yml`; query via `vecs query <collection>` |
 | **Threatened** | A proposal would falsify a `claim` or touches `verify` scope |
 | **FROZEN** | Must not change without coordinated migration; threatened → **BLOCKED** |

@@ -48,7 +48,7 @@ Each assertion has a stable **`id`** (snake_case, unique in that file) — see [
 
 ## Lifecycle of assertions
 
-**Who may edit:** only maintainers named in `authority` (typically via CODEOWNERS on `/.invariants`). Agents and other contributors must not edit dotfiles — they evaluate proposals against the cascade and write **reports**, not constitutional changes.
+**Who may edit:** only maintainers named in `authority` (typically via CODEOWNERS on `/.invariants`). Agents and other contributors must not edit dotfiles — they evaluate proposals against the cascade and write **reports**, not constitutional changes. Chat rules are not the lock: after you finish editing, **OS-seal** the file (below) so a rogue agent cannot write it.
 
 | Phase | What happens |
 |-------|----------------|
@@ -56,6 +56,53 @@ Each assertion has a stable **`id`** (snake_case, unique in that file) — see [
 | **Approve** | A maintainer merges a PR that changes the dotfile. |
 | **Enforce** | Later changes are checked against the cascade (human review and/or conformance agent). |
 | **Retire** | A maintainer removes or rewrites an assertion in a PR — never silent drift in the file. |
+
+---
+
+## OS seal (maintainer only — not an agent script)
+
+A writable `.invariants` is unprotected. Chat rules (“never edit”) do not stop a non-compliant agent with shell. The real lock is **owner-read-only + immutable** on disk.
+
+**No `seal` / `unseal` scripts in this repository.** Named scripts are a one-liner an agent with shell could run. You apply `chmod` and the immutable flag in your own terminal. The only in-repo helper is a **read-only check**.
+
+| Command | Risk | When |
+|---------|------|------|
+| **SEAL** (below) | Safe — locks the constitution | Always run after you finish editing `.invariants` |
+| **UNLOCK** (below) | **Dangerous** — same-UID agents can write until you re-seal | Only when you deliberately intend to edit |
+| `npm run check:sealed` | Safe — read-only verify | Anytime; does not change permissions |
+
+Seal every live file in the cascade (apex and each `{repo}/.invariants`). Check a path with `bash scripts/check-invariants-sealed.sh path/to/.invariants`.
+
+**SEAL — run after every edit** (macOS):
+
+```bash
+# SAFE: owner read-only + immutable. Cursor cannot save without your password.
+chflags nouchg .invariants 2>/dev/null
+chmod 400 .invariants
+chflags uchg .invariants
+```
+
+**UNLOCK — only when you intend to edit** (macOS):
+
+```bash
+# DANGEROUS: opens writes. Re-run SEAL before you return to an agent.
+chflags nouchg .invariants
+chmod 600 .invariants
+```
+
+Linux:
+
+```bash
+# SEAL
+chmod 400 .invariants
+sudo chattr +i .invariants
+
+# UNLOCK (DANGEROUS)
+sudo chattr -i .invariants
+chmod 600 .invariants
+```
+
+Agents must never run `chmod` / `chflags` / `chattr` on `.invariants`.
 
 ---
 
@@ -157,9 +204,11 @@ cd <repo-dir>
 cp sentinel.config.yml.example sentinel.config.yml
 cp .invariants.example .invariants
 # edit sentinel.config.yml, .invariants, CONTRACT.md when ready
+# then OS-seal .invariants (see OS seal). Do not leave it writable around agents.
 
 bash setup.sh
 gh auth login    # once — only if you fetch/post GitHub issues
+npm run check:sealed                 # read-only verify
 ```
 
 `setup.sh` pulls submodules (`vendor/vecs`), installs npm deps, starts Qdrant, puts `vecs` on PATH, syncs repos from config, fetches `needs_triage` issues, rebuilds the code index.
@@ -185,6 +234,7 @@ cd ../..
 cp sentinel.config.yml.example sentinel.config.yml
 cp .invariants.example .invariants
 bash setup.sh
+npm run check:sealed
 ```
 
 `install:system` downloads Qdrant, registers `dev.vecs.qdrant` (starts on login), stores data in `~/.vecs/data/`, and **`npm link`s the `vecs` CLI globally**. After that:
@@ -244,9 +294,10 @@ Codes: **`M`** map paths, **`S`** sync facts. **Untagged** `.md` (`issues/`, `re
 
 | File | Part of the **convention**? | Role |
 |------|---------------------------|------|
-| `/.invariants`, `{repo}/.invariants` | **Yes** | Governance |
+| `/.invariants`, `{repo}/.invariants` | **Yes** | Governance (OS-seal after edit) |
 | `CONTRACT.md`, `GLOSSARY.md`, `IMPLEMENTATION_MAP.md` | No | Agent helpers (`·NAV` on line 1) |
 | `setup.sh`, `sentinel.config.yml` | No | This workspace only |
+| `scripts/check-invariants-sealed.sh` | No | Read-only verify that `.invariants` is sealed |
 
 ---
 

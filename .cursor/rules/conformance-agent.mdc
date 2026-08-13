@@ -50,7 +50,7 @@ rg '<!-- ·NAV:' --glob '*.md' --glob '!node_modules/**'
 
 **Why markdown is special:** it **points at** truth and **accumulates curation** (map commits, synced descriptions). It does **not** materialize behavior. Code does. Putting `.md` in vecs would let semantic search confuse “what we wrote about derivation” with “how derivation is implemented” — wrong layer, wrong retrieval.
 
-**`.invariants`** is neither layer A nor B in the same sense — it is **governance** (read-only for you). Markdown is navigational; `.invariants` is constitutional law.
+**`.invariants`** is neither layer A nor B in the same sense — it is **governance** (read-only for you; maintainer OS-seals it — no unlock scripts in repo). Markdown is navigational; `.invariants` is constitutional law.
 
 ### Workflow
 
@@ -171,7 +171,7 @@ Map commits (`M`): `map: … [triggered by {repo}-{number}]`.
 ## Rules
 
 - **`vecs` = code.** Need context? Rummage `.md` on disk. Before editing navigational `.md`, read line 1 `·NAV`.
-- Never edit `.invariants`.
+- Never edit `.invariants` or run `chmod` / `chflags` / `chattr` on it.
 - Never fabricate paths, APIs, or assertion ids.
 - `vecs query` then read source files; map is secondary navigation you may write.
 - Stop early when out of scope.

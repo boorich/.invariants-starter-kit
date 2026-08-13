@@ -8,7 +8,8 @@
     "bootstrap": "bash scripts/bootstrap.sh",
     "setup": "bash setup.sh",
     "index": "node scripts/index-repos.js",
-    "check:qdrant": "node scripts/check-qdrant.js"
+    "check:qdrant": "node scripts/check-qdrant.js",
+    "check:sealed": "bash scripts/check-invariants-sealed.sh"
   },
   "dependencies": {
     "fastembed": "^2.1.0",

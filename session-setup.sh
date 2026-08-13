@@ -27,6 +27,17 @@ if [[ ! -d node_modules ]]; then
   npm install --silent
 fi
 
+echo "── Checking .invariants seal ─────────────────────────────────────────"
+if [[ -f "$WORKSPACE_DIR/scripts/check-invariants-sealed.sh" && -f "$WORKSPACE_DIR/.invariants" ]]; then
+  if bash "$WORKSPACE_DIR/scripts/check-invariants-sealed.sh"; then
+    true
+  else
+    echo "WARNING: .invariants is not OS-sealed. Maintainer: README OS seal. Agents must not chmod/chflags/chattr." >&2
+  fi
+else
+  echo "→ no live .invariants (or no check script) — skip seal check"
+fi
+
 echo "── Checking Qdrant (vecs) ────────────────────────────────────────────"
 node scripts/check-qdrant.js || {
   echo "→ Qdrant not up — running bootstrap"
