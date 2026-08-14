@@ -122,7 +122,7 @@ Whoever evaluates (human or agent) loads the **cascade** — apex plus every rel
 
 | Threatened severity | Outcome |
 |---------------------|---------|
-| *(none)* | **CLOSE** — out of scope for these claims |
+| *(none)* | **CLEAR** — constitution triage complete; not an interface concern. **Do not** close the GitHub issue — engineering may work |
 | **FROZEN** | **BLOCKED** — needs coordinated / major migration |
 | **VERSIONED** | **PROCEED TO TRIAGE** — allowed with a documented migration path |
 | **ADDITIVE** | **PROCEED** — new surface; existing consumers unaffected |
@@ -130,6 +130,8 @@ Whoever evaluates (human or agent) loads the **cascade** — apex plus every rel
 Severity was chosen when the assertion was written. Evaluation **pattern-matches**; it does not renegotiate policy in chat.
 
 A separate **PASS / FAIL / UNKNOWN** on current code is audit output for that run — never written back into `.invariants`.
+
+How to interpret a posted report, verdicts, and labels: **[docs/reading.html](docs/reading.html)**.
 
 ---
 
@@ -142,7 +144,7 @@ Claims in plain language — not a rules engine, not ArchUnit, not a linter conf
 Apex constitution plus per-repo files that `inherits` upward. One repo is the degenerate case (apex only).
 
 **03 — Precise, not vague**  
-**CLOSE**, **BLOCKED**, **PROCEED TO TRIAGE**, **PROCEED** — from severity, not mood.
+**CLEAR**, **BLOCKED**, **PROCEED TO TRIAGE**, **PROCEED** — from severity, not mood. **CLEAR** means triage clears (not “close this issue”).
 
 **04 — Forks are valid (say it in the report, not in the file)**  
 Incompatible sub-repo claims may mean an **intentional fork**. Articulate that in review; do not store fork status or issue trackers in `.invariants`.

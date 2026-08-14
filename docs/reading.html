@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to read a report — .invariants docs</title>
+<meta name="description" content="Developer docs: how to interpret conformance reports, verdicts, GitHub labels, and PASS/FAIL findings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0d;
+    --fg: #e8e4d9;
+    --muted: #8a857a;
+    --accent: #c8b97a;
+    --dim: #181814;
+    --sidebar: #121210;
+    --border: #2a2a26;
+    --frozen: #c8786a;
+    --versioned: #c8b97a;
+    --additive: #7a9e7e;
+    --code-bg: #1c1c18;
+    --header-h: 52px;
+    --sidebar-w: 240px;
+  }
+
+  html { scroll-behavior: auto; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: var(--header-h);
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 24px;
+  }
+
+  .topbar-logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .topbar-logo:hover { text-decoration: none; }
+
+  .topbar-crumb { font-size: 13px; color: var(--muted); }
+  .topbar-crumb span { color: var(--fg); }
+
+  .topbar-links {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  .topbar-links a { color: var(--muted); text-decoration: none; }
+  .topbar-links a:hover { color: var(--fg); text-decoration: none; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    min-height: calc(100vh - var(--header-h));
+  }
+
+  .sidebar {
+    position: sticky;
+    top: var(--header-h);
+    height: calc(100vh - var(--header-h));
+    overflow-y: auto;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px 48px;
+  }
+
+  .sidebar-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px 10px;
+  }
+
+  .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+
+  .sidebar a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 7px 8px;
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+  }
+
+  .sidebar a:hover {
+    color: var(--fg);
+    background: var(--dim);
+    text-decoration: none;
+  }
+
+  .sidebar a.active {
+    color: var(--fg);
+    background: var(--dim);
+    border-left-color: var(--accent);
+  }
+
+  .content {
+    max-width: 760px;
+    padding: 40px 48px 80px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+
+  .lead {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    max-width: 62ch;
+  }
+
+  .page h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 28px 0 8px;
+  }
+
+  .page p { margin-bottom: 14px; max-width: 68ch; }
+
+  .page ul, .page ol {
+    margin: 0 0 16px 1.2em;
+    max-width: 68ch;
+  }
+
+  .page li { margin-bottom: 6px; }
+
+  .note {
+    background: var(--dim);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    margin: 16px 0 24px;
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 68ch;
+  }
+
+  .note strong { color: var(--fg); font-weight: 600; }
+  .warn { border-left-color: var(--frozen); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13.5px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom-color: #3a3a34;
+  }
+
+  td:first-child {
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+  }
+
+  .v-clear { color: var(--muted); }
+  .v-proceed { color: var(--additive); }
+  .v-triage { color: var(--versioned); }
+  .v-blocked { color: var(--frozen); }
+
+  .dl {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 8px 20px;
+    margin: 16px 0 24px;
+    font-size: 14px;
+    max-width: 68ch;
+  }
+
+  .dl dt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .pager a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-decoration: none;
+    min-width: 0;
+  }
+
+  .pager a:hover { text-decoration: none; }
+  .pager a span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pager a strong { font-size: 14px; font-weight: 500; color: var(--fg); }
+  .pager a:hover strong { color: var(--accent); }
+  .pager .next { text-align: right; margin-left: auto; }
+  .pager .prev:empty, .pager .next:empty { display: none; }
+
+  .menu-btn {
+    display: none;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font: inherit;
+    font-size: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar {
+      display: none;
+      position: relative;
+      top: 0;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar.open { display: block; }
+    .menu-btn { display: inline-block; }
+    .content { padding: 28px 20px 64px; }
+    td:first-child { white-space: normal; }
+    .dl { grid-template-columns: 1fr; gap: 2px 0; }
+    .dl dt { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-btn" type="button" id="menu-btn" aria-expanded="false">Menu</button>
+  <a class="topbar-logo" href="index.html">.invariants</a>
+  <div class="topbar-crumb">Docs / <span id="crumb">Overview</span></div>
+  <div class="topbar-links">
+    <a href="index.html">Convention</a>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-label">Pages</div>
+    <nav id="nav">
+      <a href="#overview">Overview</a>
+      <a href="#quick-rules">Quick rules</a>
+      <a href="#two-questions">Two questions</a>
+      <a href="#verdicts">Verdicts</a>
+      <a href="#labels">GitHub labels</a>
+      <a href="#anatomy">Report anatomy</a>
+      <a href="#artifacts">Artifacts</a>
+      <a href="#naming">CLEAR vs CLOSE</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <article class="page" id="overview" data-title="Overview">
+      <h1>How to read a report</h1>
+      <p class="lead">
+        A conformance comment is constitution triage, not a product review and not a vote to close the ticket.
+        This page is for engineers reading that comment on a GitHub issue.
+      </p>
+      <p>
+        The clerk (human or agent) loads the <code>.invariants</code> cascade and asks:
+        <em>does this proposal threaten a claim?</em>
+        The comment you see is the answer. Bug fixes, refactors, and backlog priority stay with engineering.
+      </p>
+      <p>
+        Ground truth is <strong>code</strong> (what runs) plus <strong>GitHub labels</strong> (clerk state).
+        The report itself is not law.
+      </p>
+      <p>
+        Share a deep link by copying the URL after you open a page in the sidebar — e.g. <code>reading.html#verdicts</code>.
+      </p>
+    </article>
+
+    <article class="page" id="quick-rules" data-title="Quick rules">
+      <h1>Quick rules</h1>
+      <p class="lead">Three facts. Then pick up the issue.</p>
+      <ul>
+        <li><strong>CLEAR does not mean close the issue.</strong> Constitution triage is done. Leave the ticket open; engineering still owns the work.</li>
+        <li><strong>CLEAR and PROCEED are both pickable.</strong> Neither is a hold. They differ in what the PR must not break, not in whether you may start.</li>
+        <li><strong>PASS / FAIL is not the verdict.</strong> Today’s code can FAIL a claim while the issue is still CLEAR or PROCEED. Do not mix the columns.</li>
+      </ul>
+    </article>
+
+    <article class="page" id="two-questions" data-title="Two questions">
+      <h1>Two questions</h1>
+      <p class="lead">Every report answers both. Separately.</p>
+      <p>Mixing them is the usual misread: “code is FAIL, so we are BLOCKED,” or “CLEAR, so the bug isn’t real.”</p>
+      <dl class="dl">
+        <dt>Findings table</dt>
+        <dd>
+          <strong>Does today’s code match the claim?</strong>
+          <code>PASS</code> / <code>FAIL</code> / <code>UNKNOWN</code> against source you can open.
+          Audit for this run. Never written back into <code>.invariants</code>.
+          A FAIL is often the acceptance criteria for “done,” not a reason to stop the issue.
+        </dd>
+        <dt>Recommendation</dt>
+        <dd>
+          <strong>Does doing this issue break a claim?</strong>
+          <code>CLEAR</code> / <code>PROCEED</code> / <code>PROCEED TO TRIAGE</code> / <code>BLOCKED</code>.
+          Pattern-matched from the highest threatened severity. That is the only constitution gate.
+        </dd>
+      </dl>
+    </article>
+
+    <article class="page" id="verdicts" data-title="Verdicts">
+      <h1>Verdicts</h1>
+      <p class="lead">Same backlog. Different review.</p>
+      <p>
+        If you only care “can we pick it?”, CLEAR and PROCEED collapse.
+        The split exists so an additive API change is not reviewed like dropping unused tables.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Verdict</th>
+            <th>When</th>
+            <th>Pick it?</th>
+            <th>Review watches</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="v-clear">CLEAR</td>
+            <td>No assertion threatened. Not an interface or protocol concern.</td>
+            <td>Yes — normal product work.</td>
+            <td>Do not accidentally start changing FROZEN surfaces.</td>
+          </tr>
+          <tr>
+            <td class="v-proceed">PROCEED</td>
+            <td>ADDITIVE claim in play: new optional fields, endpoints, or UX. Existing consumers stay valid.</td>
+            <td>Yes — implement with the report’s guards.</td>
+            <td>Stay additive. If the PR changes today’s list shape, field names, or default semantics, it is no longer PROCEED.</td>
+          </tr>
+          <tr>
+            <td class="v-triage">PROCEED TO TRIAGE</td>
+            <td>VERSIONED claim threatened. Breaking change is allowed only with a documented migration path.</td>
+            <td>Not until the migration path exists.</td>
+            <td>Upgrade story, lockstep consumers, major-level communication.</td>
+          </tr>
+          <tr>
+            <td class="v-blocked">BLOCKED</td>
+            <td>FROZEN claim would be falsified. Cross-repo guarantee at risk.</td>
+            <td>No — constitution first.</td>
+            <td>Coordinated / MAJOR decision. Do not merge around it.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">
+        <strong>Mixed issues</strong> split the recommendation (e.g. BLOCKED for the FROZEN part, PROCEED for the additive part).
+        Highest severity still wins the primary line.
+      </p>
+    </article>
+
+    <article class="page" id="labels" data-title="GitHub labels">
+      <h1>GitHub labels</h1>
+      <p class="lead"><code>in_triage</code> is not a hold.</p>
+      <p>Labels track <em>constitution clerk state</em>, not engineering assignment.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Means</th>
+            <th>Does not mean</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>needs_triage</td>
+            <td>Waiting for a cascade evaluation.</td>
+            <td>The issue is invalid or low priority.</td>
+          </tr>
+          <tr>
+            <td>in_triage</td>
+            <td>A report was posted. Clerk step finished (or in flight).</td>
+            <td>“Don’t pick this.” CLEAR and PROCEED issues are ready for engineering.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The agent workflow only flips <code>needs_triage</code> → <code>in_triage</code>.
+        It does not close issues and does not define a “ready for eng” label.
+        Drop <code>in_triage</code> on CLEAR / PROCEED if your board treats that label as “still ours.”
+        Leave it on <span class="v-blocked">BLOCKED</span> and <span class="v-triage">PROCEED TO TRIAGE</span>.
+      </p>
+    </article>
+
+    <article class="page" id="anatomy" data-title="Report anatomy">
+      <h1>Report anatomy</h1>
+      <p class="lead">What each heading is for.</p>
+      <dl class="dl">
+        <dt>Scope Decision</dt>
+        <dd>Is this a constitution question? Out of scope → usually CLEAR. In scope names which claims could be touched.</dd>
+        <dt>Surface Classification</dt>
+        <dd>Threatened severity → the verdict. Guards live here (“optional params only”, “don’t rename fields”).</dd>
+        <dt>Invariant Findings</dt>
+        <dd>PASS / FAIL / UNKNOWN vs <em>today’s code</em>, with file evidence. Not the recommendation.</dd>
+        <dt>Implementation Alignment</dt>
+        <dd>How to do the work without falsifying a claim. Advice, not new policy.</dd>
+        <dt>Downstream Impact</dt>
+        <dd>Which repos move together. Lockstep notes belong here.</dd>
+        <dt>Recommendation</dt>
+        <dd>One primary verdict. If it says CLEAR, it should spell out: triage complete — do not close the GitHub issue.</dd>
+      </dl>
+    </article>
+
+    <article class="page" id="artifacts" data-title="Artifacts">
+      <h1>Artifacts</h1>
+      <p class="lead">What is law, what is a map, what is a comment.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Artifact</th>
+            <th>Role</th>
+            <th>How to treat it</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>.invariants</td>
+            <td>Constitution — claims + severity.</td>
+            <td>Read-only for agents. Maintainers change it in a PR. No issue numbers, no “currently failing,” no fork flags in the file.</td>
+          </tr>
+          <tr>
+            <td>GitHub comment / reports/*.md</td>
+            <td>This evaluation, posted once.</td>
+            <td>The thing you are reading. Skip if a report already exists (idempotency). Not governance.</td>
+          </tr>
+          <tr>
+            <td>GitHub labels</td>
+            <td>Clerk state.</td>
+            <td><code>needs_triage</code> → <code>in_triage</code>. Not a close, not a priority.</td>
+          </tr>
+          <tr>
+            <td>CONTRACT.md / GLOSSARY.md</td>
+            <td>Navigational prose (<code>·NAV:S</code>).</td>
+            <td>Orient. If it conflicts with a claim, the claim wins.</td>
+          </tr>
+          <tr>
+            <td>IMPLEMENTATION_MAP.md</td>
+            <td>Code-path index (<code>·NAV:M</code>).</td>
+            <td>Points at files. Proof is still the source, not the map.</td>
+          </tr>
+          <tr>
+            <td>Code (vecs + files)</td>
+            <td>What actually runs.</td>
+            <td>Ground truth for PASS/FAIL. Markdown is not in the search corpus.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">
+        <strong>Intentional fork:</strong> if a sub-repo claim is incompatible with the apex, that is said in the <em>report</em>.
+        Operators decide. It is never stored as metadata in <code>.invariants</code>.
+      </p>
+    </article>
+
+    <article class="page" id="naming" data-title="CLEAR vs CLOSE">
+      <h1>CLEAR vs CLOSE</h1>
+      <p class="lead">Never write bare CLOSE.</p>
+      <p>
+        Older docs and some starter-kit copies used <strong>CLOSE</strong> for “no assertion threatened.”
+        Peers read it as “close this GitHub issue.” The token is <strong>CLEAR</strong> —
+        constitution triage complete; work may continue.
+      </p>
+      <p class="note warn">
+        If you see <strong>CLOSE</strong> in a comment, read it as CLEAR unless the author explicitly asked to close the ticket.
+      </p>
+    </article>
+
+    <nav class="pager" aria-label="Page">
+      <a class="prev" id="prev" href="#"></a>
+      <a class="next" id="next" href="#"></a>
+    </nav>
+  </main>
+</div>
+
+<script>
+  const PAGES = [...document.querySelectorAll('.page')].map((el) => ({
+    id: el.id,
+    title: el.dataset.title,
+  }));
+  const DEFAULT = 'overview';
+
+  function currentId() {
+    const id = location.hash.replace(/^#/, '');
+    return PAGES.some((p) => p.id === id) ? id : DEFAULT;
+  }
+
+  function show(id) {
+    document.querySelectorAll('.page').forEach((el) => {
+      el.classList.toggle('active', el.id === id);
+    });
+    document.querySelectorAll('#nav a').forEach((a) => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+    const page = PAGES.find((p) => p.id === id);
+    document.getElementById('crumb').textContent = page.title;
+    document.title = page.title + ' — .invariants docs';
+
+    const i = PAGES.findIndex((p) => p.id === id);
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    if (i > 0) {
+      prev.href = '#' + PAGES[i - 1].id;
+      prev.innerHTML = '<span>Previous</span><strong>' + PAGES[i - 1].title + '</strong>';
+    } else {
+      prev.removeAttribute('href');
+      prev.innerHTML = '';
+    }
+    if (i < PAGES.length - 1) {
+      next.href = '#' + PAGES[i + 1].id;
+      next.innerHTML = '<span>Next</span><strong>' + PAGES[i + 1].title + '</strong>';
+    } else {
+      next.removeAttribute('href');
+      next.innerHTML = '';
+    }
+
+    window.scrollTo(0, 0);
+  }
+
+  function route() {
+    const id = currentId();
+    if (!location.hash) {
+      history.replaceState(null, '', '#' + DEFAULT);
+    }
+    show(id);
+  }
+
+  window.addEventListener('hashchange', route);
+  route();
+
+  const btn = document.getElementById('menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  btn.addEventListener('click', () => {
+    const open = sidebar.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
+  });
+  document.querySelectorAll('#nav a').forEach((a) => {
+    a.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+</script>
+</body>
+</html>

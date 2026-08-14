@@ -673,6 +673,7 @@
       <li><a href="#lineage">Lineage</a></li>
       <li><a href="#how">How</a></li>
       <li><a href="#verdict">Verdict</a></li>
+      <li><a href="reading.html">Reading</a></li>
       <li><a href="#try" class="nav-cta">Try it</a></li>
       <li><a href="#spec">Spec</a></li>
     </ul>
@@ -686,8 +687,9 @@
       Not a framework. Not SaaS. A <code>.invariants</code> dotfile you commit like <code>.gitignore</code>.
       Optional <strong>starter kit</strong>: multi-repo cascade, <a href="https://github.com/boorich/vecs" style="color: var(--accent);">vecs</a> code index (no markdown in the corpus),
       GitHub triage via <code>gh</code>, and a conformance agent that pattern-matches severity to
-      <strong>BLOCKED</strong>, <strong>PROCEED TO TRIAGE</strong>, <strong>PROCEED</strong>, or <strong>CLOSE</strong>.
+      <strong>BLOCKED</strong>, <strong>PROCEED TO TRIAGE</strong>, <strong>PROCEED</strong>, or <strong>CLEAR</strong>.
       The dotfile is the law; the agent is the clerk.
+      <a href="reading.html" style="color: var(--accent);">How to read a report →</a>
     </p>
   </section>
 
@@ -867,10 +869,12 @@
       <span class="match-arm"><span class="match-severity-frozen">FROZEN</span>    <span class="match-arrow">=></span> <span class="match-outcome">BLOCKED</span></span>
       <span class="match-arm"><span class="match-severity-versioned">VERSIONED</span> <span class="match-arrow">=></span> <span class="match-outcome">PROCEED TO TRIAGE</span></span>
       <span class="match-arm"><span class="match-severity-additive">ADDITIVE</span>  <span class="match-arrow">=></span> <span class="match-outcome">PROCEED</span></span>
-      <span class="match-arm"><span class="match-severity-none">None</span>      <span class="match-arrow">=></span> <span class="match-outcome">CLOSE</span></span>
+      <span class="match-arm"><span class="match-severity-none">None</span>      <span class="match-arrow">=></span> <span class="match-outcome">CLEAR</span></span>
       }
       <div class="match-note">
         Mixed issues: split the recommendation (e.g. BLOCKED for the FROZEN part, PROCEED for the additive part).
+        <strong>CLEAR</strong> is not “close the GitHub issue” — constitution triage is done; engineering continues.
+        <a href="reading.html" style="color: var(--accent);">How to read a report →</a>
       </div>
     </div>
   </section>
@@ -964,7 +968,7 @@ gh auth login   <span class="line-comment"># once, if you use GitHub triage</spa
 
   <footer>
     <p>Apache-2.0 · convention + optional reference workspace</p>
-    <span class="footer-tag"><a href="https://github.com/boorich/.invariants-starter-kit">starter kit</a> · <a href="https://github.com/boorich/vecs">vecs</a></span>
+    <span class="footer-tag"><a href="reading.html">how to read a report</a> · <a href="https://github.com/boorich/.invariants-starter-kit">starter kit</a> · <a href="https://github.com/boorich/vecs">vecs</a></span>
   </footer>
 </div>
 
